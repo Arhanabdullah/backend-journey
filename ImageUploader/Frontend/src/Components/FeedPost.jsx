@@ -7,7 +7,7 @@ const FeedPost = () => {
     useEffect(()=>{
         axios.get('http://localhost:3000/posts')
         .then((res)=>{
-            console.log(res.data);
+            setposts(res.data.posts)
             
         })
     },[])

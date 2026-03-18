@@ -86,9 +86,10 @@ html {
 }
 
 .feed-post img {
-  max-width: 100px;
+  max-width: 200px;
   margin: 10px 0px;
   border-radius: 4px;
+  object-fit:fill;
 }
 
 .feed-post h3 {
