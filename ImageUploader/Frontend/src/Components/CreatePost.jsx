@@ -18,14 +18,14 @@ const CreatePost = () => {
         })
     }
     return (
-        <section className='create-post-section'>
+        <div className='create-post-section sm:h-screen md:h-screen w-full m-auto flex flex-col items-center gap-5'>
             <h1>Create Post</h1>
             <form onSubmit={submitHandler} >
                 <input type="file" name='image' required accept='image/*' />
                 <input type="text" name='caption' placeholder='Enter Caption' required />
                 <button>Submit</button>
             </form>
-        </section>
+        </div>
     )
 }
 

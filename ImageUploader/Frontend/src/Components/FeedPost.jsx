@@ -12,7 +12,7 @@ const FeedPost = () => {
         })
     },[])
     return (
-        <section className='feed-post-section'>
+        <div className='feed-post-section lg:flex-row  sm:flex-col md:flex-col  '>
             {
             posts.length > 0 ?
             posts.map((post) => {
@@ -26,7 +26,7 @@ const FeedPost = () => {
             : <h2>No Posts Available</h2>
         }
 
-        </section>
+        </div>
     )
 }
 

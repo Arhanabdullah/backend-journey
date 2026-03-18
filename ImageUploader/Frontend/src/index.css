@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 * {
   margin: 0;
   padding: 0;
@@ -31,7 +33,7 @@ html {
   align-items: center;
   gap: 20px;
   height: 100vh;
-  min-width: 100vh;
+  min-width: 100vw;
   background-color: #f0f2f5;
 }
 
@@ -65,31 +67,46 @@ html {
 }
 .feed-post-section {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  flex-direction: row;
+  justify-content: start;
+  align-items: start;
   gap: 20px;
-  height: 100vh;
-  min-width: 100vh;
+  min-height: 100vh;
+  min-width: 100vw;
   background-color: #f0f2f5;
+  padding: 40px;
 }
-
-.feed-post{
+@media (max-width:768px) {
+  .feed-post-section {
     display: flex;
     flex-direction: column;
     justify-content: start;
     align-items: center;
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    gap: 20px;
+    min-height: 100vh;
+    min-width: 100vw;
+    background-color: #f0f2f5;
+    padding: 40px;
+  }
+}
+.feed-post {
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: center;
+  background-color: white;
+  min-width: 300px;
+  max-height: 200px;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .feed-post img {
   max-width: 200px;
   margin: 10px 0px;
   border-radius: 4px;
-  object-fit:fill;
+  object-fit: fill;
 }
 
 .feed-post h3 {
