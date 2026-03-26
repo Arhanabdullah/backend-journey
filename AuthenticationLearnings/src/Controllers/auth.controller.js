@@ -1,26 +1,23 @@
 const userModel = require('../models/user.model')
 const jwt = require('jsonwebtoken')
-const dotenv = require('dotenv')
-dotenv.config()
-async function registerUser(req, res){
+require("dotenv").config()
+async function registerUser(req, res) {
 
-    
-    const {username, email, password} = req.body
-    
-    const user = await new userModel({
+    const { username, email, password } = req.body
+
+    const ifUserExists = await userModel.findOne({
+        email
+    })
+    if (ifUserExists) {
+        return res.status(409).json({
+            message: "User already exists"
+        })
+    }
+    const user = await userModel.create({
         username,
         email,
         password
     })
-    const ifUserExists = await userModel.findOne({
-        email
-    })
-
-    if(ifUserExists){
-        return res.status(409).json({
-            message:"User already exists"
-        })
-    }
 
     const token = jwt.sign({
         id: user._id,
@@ -34,4 +31,4 @@ async function registerUser(req, res){
 }
 
 
-module.exports = {registerUser}
+module.exports = { registerUser }
