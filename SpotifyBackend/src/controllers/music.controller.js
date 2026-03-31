@@ -5,11 +5,6 @@ const bcrypt = require('bcryptjs')
 
 async function createMusic(req, res) {
     const token = req.cookies.token; 
-     console.log('=== DEBUG ===')
-    console.log('All cookies:', req.cookies)        // is cookie even parsed?
-    console.log('Token:', token)                     // is token present?
-    console.log('All headers:', req.headers)         // check cookie header
-    console.log('=============')
     if (!token) {
         return res.status(401).json({ message: "Unauthorized access" })
     }
@@ -36,6 +31,8 @@ async function createMusic(req, res) {
     }
 
     catch (error) {
+        console.log(error);
+        
         return res.status(401).json({ message: "Unauthorized access" })
     }
 }

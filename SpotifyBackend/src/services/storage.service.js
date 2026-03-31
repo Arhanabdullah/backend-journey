@@ -6,7 +6,7 @@ const imageKitClient = new ImageKit({
 
 async function uploadFile(file) {
 
-    const result = await imageKitClient.upload({
+    const result = await imageKitClient.files.upload({
         file,
         fileName: "music_" + Date.now(),
         folder: "SpotifyBackend/music"
