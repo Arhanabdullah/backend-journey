@@ -37,4 +37,5 @@ async function authUser(req, res, next) {
     }
 }
 
+
 module.exports = { authArtist, authUser }
