@@ -2,6 +2,7 @@ const userModel = require('../models/user.model')
 const crypto = require('crypto')
 const jwt = require('jsonwebtoken')
 const config = require('../config/config')
+const sessionModel = require('../models/session.model')
 
 async function registerUser(req, res) {
 
@@ -24,6 +25,21 @@ async function registerUser(req, res) {
         email,
         password: hashedPassword
     })
+    const refreshToken = jwt.sign({
+        id: newUser._id,
+        username
+    }, config.JWT_SECRET_KEY,
+        {
+            expiresIn: '7d'
+        })
+    const refreshTokenHash = crypto.createHash("sha256").update(refreshToken).digest("hex")
+
+    const session = await sessionModel.create({
+        userId: newUser._id,
+        refreshToken: refreshTokenHash,
+        ip: req.ip,
+        userAgent: req.headers["user-agent"]
+    })
     const accessToken = jwt.sign({
         id: newUser._id,
         username
@@ -32,26 +48,19 @@ async function registerUser(req, res) {
             expiresIn: '15m'
         })
 
-    const refreshToken = jwt.sign({
-        id: newUser._id,
-        username
-    }, config.JWT_SECRET_KEY,
-        {
-            expiresIn: '7d'
-        })
-        res.cookie("refreshToken", refreshToken,{
-            httpOnly: true,                             //httpOnly and secure client side ke js se token access hone nhi deta
-            secure: true,
-            sameSite: "strict",
-            maxAge: 7*24*60*60*1000
-        })
+    res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,                             //httpOnly and secure client side ke js se token access hone nhi deta
+        secure: true,
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000
+    })
     res.status(201).json({
         message: "User Created Successfully",
         user: {
             name: newUser.username,
             email: newUser.email,
         },
-        token
+        accessToken
     })
 
 }
@@ -74,19 +83,32 @@ async function fetchUser(req, res) {
 
 }
 
-async function refreshToken(req,res){
-    const refreshToken = req.cookie.refreshToken
-    if(!refreshToken) return res.status(401).json({message: "Refresh Token not Found"})
+async function refreshToken(req, res) {
+    const refreshToken = req.cookies.refreshToken
+    if (!refreshToken) return res.status(401).json({ message: "Refresh Token not Found" })
 
-    const decoded = jwt.verify(refreshToken,config.JWT_SECRET_KEY)
+    const decoded = jwt.verify(refreshToken, config.JWT_SECRET_KEY)
+
+    const newrefreshToken = jwt.sign({
+        id: decoded.id,
+        username: decoded.username
+    }, config.JWT_SECRET_KEY, {
+        expiresIn: "7d"
+    })
+
+    res.cookie('refreshToken', newrefreshToken, {
+        httpOnly: true,
+        secure: true,
+        maxAge: 7 * 24 * 60 * 60 * 1000 //7days in ms
+    })
 
     const accessToken = jwt.sign({
         id: decoded.id,
         username: decoded.username
-    },config.JWT_SECRET_KEY,{
+    }, config.JWT_SECRET_KEY, {
         expiresIn: "15m"
     })
 
-    return res.status(200).json({message: "Access Token Refreshed Successfully", accessToken})
+    return res.status(200).json({ message: "Access Token Refreshed Successfully", accessToken })
 }
-module.exports = { registerUser, fetchUser,refreshToken }
+module.exports = { registerUser, fetchUser, refreshToken }
