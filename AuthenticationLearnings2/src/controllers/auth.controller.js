@@ -8,18 +8,8 @@ async function registerUser(req, res) {
 
     const { username, email, password } = req.body
 
-    const isalreadyRegistered = await userModel.findOne({
-        $or: [
-            { username },
-            { email }
-        ]
-    })
-    if (isalreadyRegistered) {
-        return res.status(409).json({ message: "Username or email already exists" })
-    }
-
+    
     const hashedPassword = crypto.createHash("sha256").update(password).digest('hex')
-
     const newUser = await userModel.create({
         username,
         email,
@@ -36,13 +26,13 @@ async function registerUser(req, res) {
 
     const session = await sessionModel.create({
         userId: newUser._id,
-        refreshToken: refreshTokenHash,
+        refreshTokenHash: refreshTokenHash,
         ip: req.ip,
         userAgent: req.headers["user-agent"]
     })
     const accessToken = jwt.sign({
-        id: newUser._id,
-        username
+        userid: newUser._id,
+        sessionId: session._id
     }, config.JWT_SECRET_KEY,
         {
             expiresIn: '15m'
@@ -65,28 +55,54 @@ async function registerUser(req, res) {
 
 }
 
-async function fetchUser(req, res) {
+async function loginUser(req, res) {
+    
+    
+    const refreshToken = jwt.sign({
+        id: isalreadyRegistered._id,
+        username
+    }, config.JWT_SECRET_KEY,
+        {
+            expiresIn: '7d'
+        })
+    const refreshTokenHash = crypto.createHash("sha256").update(refreshToken).digest("hex")
 
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token) return res.status(401).json({ message: "Token Not Found" })
-    const decoded = jwt.verify(token, config.JWT_SECRET_KEY)
-    const user = await userModel.findById(decoded.id)
+    const session = await sessionModel.create({
+        userId: isalreadyRegistered._id,
+        refreshTokenHash: refreshTokenHash,
+        ip: req.ip,
+        userAgent: req.headers["user-agent"]
+    })
+    const accessToken = jwt.sign({
+        userid: isalreadyRegistered._id,
+        sessionId: session._id
+    }, config.JWT_SECRET_KEY,
+        {
+            expiresIn: '15m'
+        })
 
-    res.status(200).json({
-        message: "User Fetched Successfully",
+    res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,                             //httpOnly and secure client side ke js se token access hone nhi deta
+        secure: true,
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000
+    })
+    res.status(201).json({
+        message: "User Logged in Successfully",
         user: {
-            username: user.username,
-            email: user.email
-
-        }
+            name: isalreadyRegistered.username,
+            email: isalreadyRegistered.email,
+        },
+        accessToken
     })
 
 }
 
 async function refreshToken(req, res) {
-    const refreshToken = req.cookies.refreshToken
-    if (!refreshToken) return res.status(401).json({ message: "Refresh Token not Found" })
 
+
+    await findSession.save(refreshTokenHash)
+    await findSession.save()
     const decoded = jwt.verify(refreshToken, config.JWT_SECRET_KEY)
 
     const newrefreshToken = jwt.sign({
@@ -111,4 +127,15 @@ async function refreshToken(req, res) {
 
     return res.status(200).json({ message: "Access Token Refreshed Successfully", accessToken })
 }
-module.exports = { registerUser, fetchUser, refreshToken }
+
+async function logoutUser(req, res) {
+    
+    findSession.revoked = true;
+    await findSession.save()
+
+    res.clearCookie('refreshToken')
+
+    res.status(200).json({ message: "Logged Out Successfully" })
+
+}
+module.exports = { registerUser, loginUser, refreshToken, logoutUser }
