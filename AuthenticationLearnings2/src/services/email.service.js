@@ -19,5 +19,21 @@ transporter.verify((error, success) => {
         console.log('Email server is ready to send messages');
     }
 });
+const sendEmail = async (to, subject, text, html) => {
+    try {
+        const info = await transporter.sendMail({
+            from: `"Your Name" <${process.env.EMAIL_USER}>`, // sender address
+            to, // list of receivers
+            subject, // Subject line
+            text, // plain text body
+            html, // html body
+        });
 
-module.exports = transporter;
+        console.log('Message sent: %s', info.messageId);
+        console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+    } catch (error) {
+        console.error('Error sending email:', error);
+    }
+};
+
+module.exports = { transporter, sendEmail };

@@ -14,4 +14,10 @@ const otpSchema = new mongoose.Schema({
         type: String,
         required:[true, "OTP hash is required"]
     }
+},{
+    timestamps: true
 })
+
+const otpModel = mongoose.model('otps', otpSchema)
+
+module.exports = otpModel
