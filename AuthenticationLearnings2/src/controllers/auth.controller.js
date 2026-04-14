@@ -25,7 +25,7 @@ async function registerUser(req, res) {
         otpHash
     })
 
-    await sendEmail(email, ` Your OTP for account verification ${otp}`, html)
+    await sendEmail(email, "OTP Verification", ` Your OTP for account verification ${otp}`, html)
     res.status(201).json({
         message: "User Created Successfully",
         user: {
@@ -121,8 +121,11 @@ async function logoutUser(req, res) {
 }
 
 async function verifyOtp(req, res) {
-    const { email, otp } = req.query
+    const { email, otp } = req.body
     const otpHash = crypto.createHash('sha256').update(otp).digest('hex')
+    if (!email || !otp) {
+        return res.status(400).json({ message: "Email and OTP are required" })
+    }
     const findOtp = await otpModel.findOne({ email, otpHash })
     if (!findOtp) {
         return res.status(400).json({ message: "Invalid OTP" })
@@ -133,7 +136,7 @@ async function verifyOtp(req, res) {
     }
     await otpModel.deleteMany({ email }) //otp verify hone ke baad otp delete kr dena chahiye security ke liye
     res.status(200).json({
-        message: "Email Verified Successfully", 
+        message: "Email Verified Successfully",
         user: {
             name: user.username,
             email: user.email,

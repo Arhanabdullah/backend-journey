@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken')
 const config = require('../config/config')
+const crypto = require('crypto')
 const userModel = require('../models/user.model')
 
 async function createUser(req, res, next) {
@@ -26,7 +27,7 @@ async function authenticateUser(req, res, next) {
     if (!isalreadyRegistered) {
         return res.status(409).json({ message: "No user exists!!!" })
     }
-    const hashedPassword = crypto.createHash("sha256").update(isalreadyRegistered.password).digest("hex")
+    const hashedPassword = crypto.createHash("sha256").update(password).digest('hex')
     if (hashedPassword !== isalreadyRegistered.password) {
         return res.status(401).json({ message: "Invalid Credentials" })
     }
