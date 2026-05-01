@@ -1,5 +1,4 @@
 const express = require('express')
-require('dotenv').config()
 const cookie = require("cookie-parser")
 const cookieParser = require('cookie-parser')
 const morgan = require('morgan')

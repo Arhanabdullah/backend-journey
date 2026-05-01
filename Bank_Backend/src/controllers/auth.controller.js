@@ -1,6 +1,7 @@
 const userModel = require('../models/user.model')
 const config = require('../config/config')
 const jwt = require('jsonwebtoken')
+const emailService = require('../services/email.service')
 const bcrypt = require('bcrypt')
 /** 
  * - user register controller
@@ -16,11 +17,10 @@ async function register(req, res) {
             status: "Failed" 
         })
     }
-    const hashedPassword = await bcrypt.hash(password, 10)
     const user = await userModel.create({
         username,
         email,
-        password: hashedPassword
+        password
     })
 
     const accessToken = jwt.sign({ 
@@ -47,6 +47,7 @@ async function register(req, res) {
         status: "Success",
         accessToken
     })
+    await emailService.sendRegistrationEmail(user.email, user.username)
 }
 
 /**
@@ -56,7 +57,7 @@ async function register(req, res) {
 
 async function login(req, res) {
     const { email, password } = req.body
-    const user = await userModel.findOne({ email })
+    const user = await userModel.findOne({ email }).select("+password")
 
     if (!user) {
         return res.status(404).json({ 
@@ -66,7 +67,7 @@ async function login(req, res) {
     }
     const isValidPassword = await user.comparePassword(password)
     
-    if (user.password !== hashedPassword) {
+    if (!isValidPassword) {
         return res.status(401).json({ 
             message: 'Invalid credentials', 
             status: "Failed" 
