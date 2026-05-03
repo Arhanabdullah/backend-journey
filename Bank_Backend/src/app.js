@@ -18,6 +18,6 @@ app.use(cookieParser())
  * - Routes
  */
 app.use('/api/auth', authRoute)
-app.use('/api/accounts',authMiddleware.authMiddleware, accountRoute)
+app.use('/api/accounts', accountRoute)
 
 module.exports= app
