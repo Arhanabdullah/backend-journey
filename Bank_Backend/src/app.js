@@ -7,6 +7,7 @@ const morgan = require('morgan')
  */
 const authRoute = require('./routes/auth.route')
 const accountRoute = require('./routes/account.route')
+const transactionRoute = require('./routes/transaction.route')
 
 const app = express()
 
@@ -19,5 +20,6 @@ app.use(cookieParser())
  */
 app.use('/api/auth', authRoute)
 app.use('/api/accounts', accountRoute)
+app.use('/api/transactions', transactionRoute)
 
 module.exports= app
