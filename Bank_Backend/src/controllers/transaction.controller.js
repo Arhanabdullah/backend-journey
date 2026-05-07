@@ -76,4 +76,16 @@ const createTransaction = async (req, res) => {
             status: "Failed"
         })
     }
+
+    /**
+     * - Check Sufficient balance
+     */
+
+    const balance = await fromUserAccount.getBalance()
+    if (balance < amount) {
+        return res.status(500).json({
+            message: "Insufficient balance in from account",
+            status: "Failed"
+        })
+    }
 }
