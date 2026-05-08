@@ -88,4 +88,18 @@ const createTransaction = async (req, res) => {
             status: "Failed"
         })
     }
+
+    /**
+     * - Create Transaction
+     */
+    const transaction = new transactionModel({
+        toAccount,
+        fromAccount,
+        amount,
+        idempotencyKey,
+        status: 'pending'
+    })
+    await transaction.save()
+
+    
 }
