@@ -7,14 +7,27 @@ async function createAccount(req, res) {
 
     const account = await accountModel.create({
         user: user._id,
-
-
     })
-
+    const findUserAccounts = await accountModel.find({ user: user._id })
+    if(findUserAccounts){
+        return res.status(400).json({
+            message: 'User already has an account'
+        })
+    }
     res.status(201).json({
         account
     })
 }
 
+async function getAccounts(req, res) {
 
-module.exports = { createAccount }
+    const user = req.user
+
+    const accounts = await accountModel.find({ user: user._id })
+    res.status(200).json({
+        accounts
+    })
+}
+
+
+module.exports = { createAccount, getAccounts }
