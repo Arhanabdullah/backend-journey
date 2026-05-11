@@ -18,6 +18,15 @@ router.post('/', authMiddleware.authMiddleware, accountController.createAccount)
  * - Protected route, requires authentication
  */
 
-router.get('/', authMiddleware.authMiddleware, accountController.getAccounts)
+router.get('/', authMiddleware.authMiddleware, accountController.getUserAccounts)
+
+/**
+ * - GET /api/accounts/balance/:accountId
+ * - Get the balance of a specific account for the authenticated user
+ * - Protected route, requires authentication
+ */
+router.get('/balance/:accountId', authMiddleware.authMiddleware, accountController.getAccountBalance)
+
+
 
 module.exports = router

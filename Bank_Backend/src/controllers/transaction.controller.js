@@ -151,12 +151,9 @@ async function createInitialFundsTransaction(req, res) {
         })
     }
     console.log(req.user._id);
-    
     const fromAccount = await accountModel.findOne({
         user: req.user._id,
-    })
-    console.log(fromAccount);
-    
+    })  
     if (!fromAccount) {
         res.status(400).json({
             message: "From account not found",
@@ -172,32 +169,26 @@ async function createInitialFundsTransaction(req, res) {
         idempotencyKey,
         status: 'pending'
     }, )
-
     const debitLedgerEntry = await ledgerModel.create([{
         account: fromAccount._id,
         type: 'debit',
         amount,
         transaction: transaction._id
     }], { session })
-
     const creditLedgerEntry = await ledgerModel.create([{
         account: toAccount,
         type: 'credit',
         amount,
         transaction: transaction._id
     }], { session })
-
     transaction.status = 'completed'
     await transaction.save({ session })
 
     await session.commitTransaction()
     session.endSession()
-
-
     /**   
      *  - Send email notification
      */
-
     await emailService.sendTransactionEmail(fromAccount.email, fromAccount.username, amount, 'debit')
     await emailService.sendTransactionEmail(toAccount.email, toAccount.username, amount, 'credit')
     res.status(200).json({
