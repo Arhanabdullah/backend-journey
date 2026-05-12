@@ -1,4 +1,5 @@
 const userModel = require('../models/user.model')
+const blacklistModel = require('../models/blacklist.model')
 const config = require('../config/config')
 const jwt = require('jsonwebtoken')
 const emailService = require('../services/email.service')
@@ -12,9 +13,9 @@ async function register(req, res) {
 
     const alreadyExist = await userModel.findOne({ email })
     if (alreadyExist) {
-        return res.status(422).json({ 
-            message: 'User already exists', 
-            status: "Failed" 
+        return res.status(422).json({
+            message: 'User already exists',
+            status: "Failed"
         })
     }
     const user = await userModel.create({
@@ -23,10 +24,10 @@ async function register(req, res) {
         password
     })
 
-    const accessToken = jwt.sign({ 
-        id: user._id 
-    }, config.JWT_SECRET_KEY, { 
-        expiresIn: '1d' 
+    const accessToken = jwt.sign({
+        id: user._id
+    }, config.JWT_SECRET_KEY, {
+        expiresIn: '1d'
     })
 
     res.cookie('accessToken', accessToken, {
@@ -60,17 +61,17 @@ async function login(req, res) {
     const user = await userModel.findOne({ email }).select("+password")
 
     if (!user) {
-        return res.status(404).json({ 
-            message: 'User not found', 
-            status: "Failed" 
+        return res.status(404).json({
+            message: 'User not found',
+            status: "Failed"
         })
     }
     const isValidPassword = await user.comparePassword(password)
-    
+
     if (!isValidPassword) {
-        return res.status(401).json({ 
-            message: 'Invalid credentials', 
-            status: "Failed" 
+        return res.status(401).json({
+            message: 'Invalid credentials',
+            status: "Failed"
         })
     }
     const accessToken = jwt.sign({ id: user._id }, config.JWT_SECRET_KEY, { expiresIn: '1d' })
@@ -90,5 +91,26 @@ async function login(req, res) {
         accessToken
     })
 }
+/** 
+ * - user logout controller
+ * - POST /api/auth/logout
+*/
+async function logout(req, res) {
+    const token = req.cookies.accessToken || req.headers.authorization?.split(' ')[1]
+    if (!token) {
+        return res.status(400).json({
+            message: 'No token provided',
+            status: "Failed"
+        })
+    }
+    await blacklistModel.create({
+        token 
+    })
+    res.clearCookie('accessToken')
+    res.status(200).json({
+        message: 'Logged out successfully',
+        status: "Success"
+    })
+}
 
-module.exports = { register, login }
+module.exports = { register, login, logout } 
