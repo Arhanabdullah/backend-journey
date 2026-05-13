@@ -11,6 +11,16 @@ async function authMiddleware(req, res, next) {
             status: "Failed"
         })
     }
+
+    const isBlacklisted = await tokenBlackListModel.findOne({ token })
+    if (isBlacklisted) {
+        return res.status(401).json({
+            message: 'Unauthorized: Token is blacklisted',
+            status: "Failed"
+        })
+    }
+
+
     try {
         const decoded = jwt.verify(token, config.JWT_SECRET_KEY)
         const user = await userModel.findById(decoded.id)
@@ -37,7 +47,8 @@ async function authSystemUserMiddleware(req, res, next) {
 
     if (!token) {
         return res.status(401).json({
-            message: "Unauthorized access, token is missing"
+            message: "Unauthorized access, token is missing",
+            status: "Failed"
         })
     }
 
@@ -45,7 +56,8 @@ async function authSystemUserMiddleware(req, res, next) {
 
     if (isBlacklisted) {
         return res.status(401).json({
-            message: "Unauthorized access, token is invalid"
+            message: "Unauthorized access, token is invalid",
+            status: "Failed"
         })
     }
     try {
@@ -53,7 +65,8 @@ async function authSystemUserMiddleware(req, res, next) {
         const user = await userModel.findById(decoded.userId).select("+systemUser")
         if (!user.systemUser) {
             return res.status(403).json({
-                message: "Forbidden access, not a system user"
+                message: "Forbidden access, not a system user",
+                status: "Failed"
             })
         }
         req.user = user
@@ -61,7 +74,8 @@ async function authSystemUserMiddleware(req, res, next) {
     }
     catch (err) {
         return res.status(401).json({
-            message: "Unauthorized access, token is invalid"
+            message: "Unauthorized access, token is invalid",
+            status: "Failed"
         })
     }
 
